@@ -3,7 +3,8 @@ from textblob import TextBlob
 from textblob.sentiments import NaiveBayesAnalyzer
 from pprint import pprint
 import pandas as pd
-
+import matplotlib.pyplot as plt
+from collections import Counter
 
 
 def load_creds(filename = 'creds'):
@@ -55,8 +56,40 @@ def main():
         data.append({'text' : tweet.full_text, 'classification': analysis.sentiment.classification})
         
     csv_write(data, 'test2.csv')
-    
+    plot_chart(data)
+
+def plot_chart(data):
+    clfs = [tweet['classification'] for tweet in data]
+    counts = Counter(clfs)
+    slices = dict(counts).values()
+    # activities = dict(counts).keys()
+    activities = ["Positive", "Negative"]
+    colors = ['#e75a7c', '#06d6a0']
+    fig, ax = plt.subplots(figsize=(6, 3), subplot_kw=dict(aspect="equal"))
+    wedges, texts, autotexts = ax.pie(slices, autopct='%.1f%%', textprops=dict(color="w"))
+    ax.legend(wedges, activities,
+            title="Types",
+            loc="center left",
+            bbox_to_anchor=(1, 0, 0.5, 1))
+
+    plt.setp(autotexts, size=8, weight="bold")
+
+    ax.set_title(f"Donald Trump's Twitter Sentiment Analysis of N = {len(data)} Tweets")
+
+    plt.show()
+
+def csv_read(filename):
+    df = pd.read_csv(filename)
+    raw = df.to_dict('split')
+    data = []
+    for el in raw['data']:
+        data.append(dict(zip(raw['columns'], el)))
+    return data
 if __name__ == "__main__":
     main()
+    # data = csv_read("test2.csv")
+    # plot_chart(data)
     # creds = load_creds()
     # print(creds)
+    # To do:
+    # Use this http://www.nltk.org/howto/sentiment.html
